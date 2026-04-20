@@ -36,7 +36,7 @@ issueCodeBtn.onclick = () => {
 };
 
 const PROXIES = [
-    "https://trampoline.turbowarp.org/proxy/scratch/", // Scratch専用・超安定
+    "https://trampoline.turbowarp.org/proxy/", // Scratch専用・超安定
     "https://corsproxy.io/?",
     "https://api.allorigins.win/raw?url=",
     "https://api.codetabs.com/v1/proxy?quest="
@@ -49,8 +49,11 @@ async function fetchWithProxy(targetUrl, isJson = true) {
             const isTurbowarp = proxy.includes("turbowarp.org");
             let url;
             if (isTurbowarp) {
-                const path = targetUrl.replace("https://api.scratch.mit.edu/", "").replace("https://scratch.mit.edu/", "site/");
-                url = `${proxy}${path}`;
+                if (targetUrl.includes("api.scratch.mit.edu")) {
+                    url = `${proxy}scratch/${targetUrl.replace("https://api.scratch.mit.edu/", "")}`;
+                } else {
+                    url = `${proxy}site/${targetUrl.replace("https://scratch.mit.edu/", "")}`;
+                }
             } else {
                 url = `${proxy}${encodeURIComponent(targetUrl)}`;
             }

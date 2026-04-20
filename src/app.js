@@ -67,9 +67,9 @@ backToStep1.onclick = () => {
     step2.classList.add('hidden');
 };
 
-// 通信プロキシのリスト（Scratch専用のTurbowarpプロキシを最優先にする）
+// 通信プロキシのリスト
 const PROXIES = [
-    "https://trampoline.turbowarp.org/proxy/scratch/", // Scratch専用・超安定
+    "https://trampoline.turbowarp.org/proxy/", // Scratch専用・超安定
     "https://corsproxy.io/?",
     "https://api.allorigins.win/raw?url=",
     "https://api.codetabs.com/v1/proxy?quest="
@@ -79,14 +79,15 @@ async function fetchWithProxy(targetUrl, isJson = true) {
     let lastError = null;
     for (const proxy of PROXIES) {
         try {
-            // Turbowarpプロキシの場合はURLの組み立て方が異なる
             const isTurbowarp = proxy.includes("turbowarp.org");
             let url;
             if (isTurbowarp) {
-                // https://api.scratch.mit.edu/... -> https://trampoline.turbowarp.org/proxy/scratch/...
-                // https://scratch.mit.edu/... -> https://trampoline.turbowarp.org/proxy/site/...
-                const path = targetUrl.replace("https://api.scratch.mit.edu/", "").replace("https://scratch.mit.edu/", "site/");
-                url = `${proxy}${path}`;
+                // Turbowarpプロキシの振り分け
+                if (targetUrl.includes("api.scratch.mit.edu")) {
+                    url = `${proxy}scratch/${targetUrl.replace("https://api.scratch.mit.edu/", "")}`;
+                } else {
+                    url = `${proxy}site/${targetUrl.replace("https://scratch.mit.edu/", "")}`;
+                }
             } else {
                 url = `${proxy}${encodeURIComponent(targetUrl)}`;
             }
@@ -100,7 +101,7 @@ async function fetchWithProxy(targetUrl, isJson = true) {
             continue;
         }
     }
-    throw new Error(`すべての通信経路が遮断されました。Scratchサーバーが重いか、メンテナンス中の可能性があります。(エラー: ${lastError?.message})`);
+    throw new Error(`接続エラー: ${lastError?.message}`);
 }
 
 verifyBtn.onclick = async () => {
