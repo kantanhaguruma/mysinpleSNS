@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple SNS - Connect with the World</title>
+    <!-- Tailwind CSS Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sawarabi+Gothic&display=swap');
+
+        body {
+            font-family: "MS PGothic", "Sawarabi Gothic", sans-serif;
+            background-color: #efefef;
+            color: #000;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 20px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .thread-title {
+            color: #ff0000;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .post {
+            margin-bottom: 20px;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 10px;
+        }
+
+        .post-header {
+            color: #228b22;
+            font-weight: bold;
+        }
+
+        .post-meta {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .post-body {
+            margin-top: 5px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-top: 20px;
+            background: #f9f9f9;
+            padding: 15px;
+            border: 1px solid #ddd;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 8px 20px;
+            background: #e1e1e1;
+            border: 1px solid #999;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #d1d1d1;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 10px;
+            color: #0000ff;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .thread-list-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .thread-list-item:hover {
+            background: #f0f0f0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ログイン（Scratch認証）画面 -->
+    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 hidden">
+        <div class="bg-white p-8 rounded shadow-lg max-w-md w-full">
+            <h2 class="text-xl font-bold mb-4 text-center">Scratchユーザー認証</h2>
+            
+            <div id="step-1">
+                <p class="text-sm mb-4 text-gray-600">Scratchのユーザー名を入力してください。</p>
+                <input type="text" id="scratch-username" placeholder="Scratchユーザー名">
+                <button id="issue-code-btn" class="w-full mt-4 bg-blue-500 text-white border-none py-3 rounded font-bold">認証コードを発行する</button>
+            </div>
+
+            <div id="step-2" class="hidden">
+                <p class="text-sm mb-2 text-gray-600">1. 以下のコードをコピーして、あなたの<a id="profile-link" href="#" target="_blank" class="text-blue-500 underline">Scratchプロフィール</a>のコメント欄に投稿してください。</p>
+                <div id="verification-code" class="bg-gray-100 p-4 text-2xl text-center font-mono font-bold tracking-widest my-4 border-2 border-dashed border-blue-300">------</div>
+                <p class="text-sm mb-4 text-gray-600">2. 投稿後、下のボタンを押してください（フォロワー50人以上が必要です）。</p>
+                <button id="verify-btn" class="w-full bg-green-600 text-white border-none py-3 rounded font-bold">認証してログイン</button>
+                <button id="back-to-step1" class="w-full mt-2 text-gray-500 text-xs underline">ユーザー名を変更する</button>
+            </div>
+
+            <div id="loading-spinner" class="hidden mt-4 text-center">
+                <i class="fas fa-circle-notch fa-spin text-2xl text-blue-500"></i>
+                <p class="text-xs text-gray-500 mt-2">検証中...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- スレッド一覧画面 -->
+        <div id="thread-list-view">
+            <h1 class="thread-title">掲示板 スレッド一覧</h1>
+            <div id="thread-list-container">
+                <!-- スレッドがここに並ぶ -->
+            </div>
+
+            <div class="form-group">
+                <h3>新規スレッド作成</h3>
+                <input type="text" id="new-thread-title" placeholder="スレッドタイトル">
+                <textarea id="new-thread-body" rows="4" placeholder="最初の書き込み"></textarea>
+                <button id="create-thread-btn">スレッドを作成する</button>
+            </div>
+        </div>
+
+        <!-- スレッド詳細画面 -->
+        <div id="thread-detail-view" class="hidden">
+            <span class="back-link" id="back-to-list">■掲示板に戻る</span>
+            <h1 id="current-thread-title" class="thread-title">スレッドタイトル</h1>
+            <div id="replies-container">
+                <!-- レスがここに並ぶ -->
+            </div>
+
+            <div class="form-group">
+                <h3>レスを書き込む</h3>
+                <input type="text" id="reply-name" placeholder="名前 (省略可)">
+                <textarea id="reply-body" rows="4" placeholder="内容"></textarea>
+                <button id="submit-reply-btn">書き込む</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./src/app.js"></script>
+</body>
+
+</html>

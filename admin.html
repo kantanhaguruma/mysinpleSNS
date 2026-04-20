@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>掲示板 管理パネル</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: "MS PGothic", sans-serif; background: #333; color: #fff; }
+        .container { max-width: 800px; margin: 40px auto; background: #fff; color: #000; padding: 20px; border: 4px solid #f00; }
+        input { border: 1px solid #ccc; padding: 5px; color: #000; }
+        button { background: #eee; border: 1px solid #999; padding: 5px 15px; cursor: pointer; color: #000; }
+        button:hover { background: #ddd; }
+        .ban-item { border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+    </style>
+</head>
+<body>
+
+    <!-- ログイン（管理者用Scratch認証）画面 -->
+    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
+        <div class="bg-white p-8 rounded shadow-lg max-w-md w-full text-black">
+            <h2 class="text-xl font-bold mb-4 text-center text-red-600">管理者認証</h2>
+            <div id="step-1">
+                <input type="text" id="scratch-username" placeholder="管理者ユーザー名" class="w-full">
+                <button id="issue-code-btn" class="w-full mt-4 bg-red-600 text-white font-bold border-none py-3">認証コード発行</button>
+            </div>
+            <div id="step-2" class="hidden">
+                <p class="text-xs mb-2">プロフィールに投稿してください:</p>
+                <div id="verification-code" class="bg-gray-100 p-4 text-2xl text-center font-bold border my-4">------</div>
+                <button id="verify-btn" class="w-full bg-red-600 text-white font-bold border-none py-3">認証してログイン</button>
+            </div>
+            <div id="loading" class="hidden text-center mt-4">
+                <i class="fas fa-circle-notch fa-spin text-red-600"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1 class="text-2xl font-bold border-b-2 border-red-600 pb-2 mb-4">管理者パネル</h1>
+        <div class="mb-8">
+            <h2 class="font-bold mb-2">ユーザーをBANする</h2>
+            <div class="flex gap-2">
+                <input type="text" id="ban-username" placeholder="Scratchユーザー名" class="flex-1">
+                <button id="add-ban-btn" class="bg-red-600 !text-white !border-none">BAN実行</button>
+            </div>
+        </div>
+
+        <div>
+            <h2 class="font-bold mb-2">BAN済みユーザー一覧</h2>
+            <div id="ban-list-container" class="border">
+                <!-- BANリストがここに表示される -->
+            </div>
+        </div>
+        
+        <div class="mt-8 text-xs text-gray-500 text-right">
+            <button onclick="sessionStorage.clear(); location.reload();" class="!text-xs !py-1">ログアウト</button>
+        </div>
+    </div>
+
+    <script type="module" src="./src/admin.js"></script>
+</body>
+</html>
